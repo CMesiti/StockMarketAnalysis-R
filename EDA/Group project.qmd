@@ -1,0 +1,693 @@
+---
+title: "Group project"
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+```
+
+```{r}
+Stock_Market_Dataset <- read.csv("Stock Market Dataset.csv")
+
+View(Stock_Market_Dataset)
+```
+
+```{r}
+class(Stock_Market_Dataset$Date)
+#Stock_Market_Dataset$Date <-dmy(Stock_Market_Dataset$Date)
+#Stock_Market_Dataset$Bitcoin_Price <- as.numeric(Stock_Market_Dataset$Bitcoin_Price)
+class(Stock_Market_Dataset$Apple_Price)
+class(Stock_Market_Dataset$Apple_Vol.)
+```
+
+```{r}
+Stock_Market_Dataset %>%
+  select() %>%
+  na.omit
+```
+
+```{r}
+str(Stock_Market_Dataset)
+```
+
+```{r}
+Stock_Market_Dataset %>%
+ggplot(aes(x = Date, y = Apple_Vol., group = 1)) +
+  geom_line()
+
+```
+
+```{r}
+Stock_Market_Dataset2 %>%
+  ggplot(aes(Apple_Vol.)) +
+  geom_histogram() 
+ggplot(Stock_Market_Dataset2)+
+  geom_histogram(aes(Apple_Price))
+ggplot(Stock_Market_Dataset)+
+  geom_histogram(aes(Crude_oil_Price))
+ggplot(Stock_Market_Dataset)+
+  geom_histogram(aes(Crude_oil_Vol.))
+```
+
+```{r}
+Stock_Market_Dataset2 <- Stock_Market_Dataset[Stock_Market_Dataset$Crude_oil_Price >= 0, ]
+```
+
+```{r}
+less <- which(Stock_Market_Dataset$Apple_Price < 79.5)
+more <- which(Stock_Market_Dataset$Apple_Price > 162.91)
+#mid <- which(is.na(Stock_Market_Dataset$Apple_Price))
+Stock_Market_Dataset$Applethreshold[less] = "Low price"
+#Stock_Market_Dataset$Applethreshold[mid] = "Medium price"
+Stock_Market_Dataset$Applethreshold[more] = "High price"
+
+Stock_Market_Dataset$Applethreshold<- replace_na(Stock_Market_Dataset$Applethreshold, "Medium Price")
+view(Stock_Market_Dataset)
+```
+
+```{r}
+Stock_Market_Dataset %>%
+ggplot() +
+  geom_bar(mapping = aes(Applethreshold))
+```
+
+```{r}
+#check for missing values in columns
+print("Bitcoin price missing values")
+sum(is.na(Stock_Market_Dataset$Bitcoin_Price))
+print("bitcoin vol missing values")
+sum(is.na(Stock_Market_Dataset$Bitcoin_Vol.))
+print("ether price missing values")
+sum(is.na(Stock_Market_Dataset$Ethereum_Price))
+print("ether vol missing values")
+sum(is.na(Stock_Market_Dataset$Ethereum_Vol.))
+print("natural gas price missing values")
+sum(is.na(Stock_Market_Dataset$Natural_Gas_Price))
+print("natural gas vol missing values")
+sum(is.na(Stock_Market_Dataset$Natural_Gas_Vol.))
+print("crude oil price missing values")
+sum(is.na(Stock_Market_Dataset$Crude_oil_Price))
+print("crude oil vol missing values")
+sum(is.na(Stock_Market_Dataset$Crude_oil_Vol.))
+print("meta price missing values")
+sum(is.na(Stock_Market_Dataset$Meta_Price))
+print("meta vol missing values")
+sum(is.na(Stock_Market_Dataset$Meta_Vol.))
+print("google price missing values")
+sum(is.na(Stock_Market_Dataset$Google_Price))
+print("google vol missing values")
+sum(is.na(Stock_Market_Dataset$Google_Vol.))
+print("apple price missing values")
+sum(is.na(Stock_Market_Dataset$Apple_Price))
+print("apple vol missing values")
+sum(is.na(Stock_Market_Dataset$Apple_Vol.))
+print("s.p 500 missing values")
+sum(is.na(Stock_Market_Dataset$S.P_500_Price))
+print("Nasdaq 100 price missing values")
+sum(is.na(Stock_Market_Dataset$Nasdaq_100_Price))
+print("nasaq 100 vol missing values")
+sum(is.na(Stock_Market_Dataset$Nasdaq_100_Vol.))
+```
+
+```{r}
+#sapply(Stock_Market_Dataset, summary)
+print("")
+summary(Stock_Market_Dataset$Apple_Price)
+print("")
+summary(Stock_Market_Dataset$Apple_Vol.)
+print("")
+summary(Stock_Market_Dataset$Crude_oil_Vol.)
+print("")
+summary(Stock_Market_Dataset$Crude_oil_Price)
+```
+
+```{r}
+#Count outliers
+Stock_Market_Dataset# %>% 
+ # select(Crude_oil_Price)
+
+outlier_apple <- length(boxplot.stats(Stock_Market_Dataset$Crude_oil_Price)$out)
+view(outlier_apple)
+```
+
+```{r}
+#counts how many outliers there are (hopefully)
+outliers <- function(x){
+outlier <- length(boxplot.stats(x)$out)
+print(paste("outliers: ", outlier))
+percent <- (outlier/sum(x, na.rm = TRUE))
+print(paste("%", percent))
+}
+#USAGE: outliers(yourdataset$yourcolumn)
+outliers(Stock_Market_Dataset$Apple_Price)
+outliers(Stock_Market_Dataset$Apple_Vol.)
+#outliers(Stock_Market_Dataset$Meta_Price)
+#outliers(Stock_Market_Dataset$Meta_Vol.)
+outliers(Stock_Market_Dataset$Crude_oil_Price)
+outliers(Stock_Market_Dataset$Crude_oil_Vol.)
+#sapply(Stock_Market_Dataset, outliers)
+
+```
+
+```{r}
+Stock_Market_Dataset %>%
+  ggplot() +
+  geom_boxplot(mapping = aes(y = Meta_Price))
+```
+
+```{r}
+percent_missing <- function(x) {
+  mean(is.na(x)) * 100
+}
+
+percent_outliers <- function(x) {
+  x <- x[!is.na(x)]
+  q1 <- quantile(x, 0.25)
+  q3 <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  lower <- q1 - 1.5 * iqr
+  upper <- q3 + 1.5 * iqr
+  mean(x < lower | x > upper) * 100
+}
+
+variables <- c("Apple_Price", "Apple_Vol.", "Crude_oil_Price", "Crude_oil_Vol.")
+
+result <- data.frame(
+  Variable = variables,
+  Percent_Missing = sapply(Stock_Market_Dataset[ , variables], percent_missing),
+  Percent_Outliers = sapply(Stock_Market_Dataset[ , variables], percent_outliers)
+)
+print(result)
+```
+
+```{r}
+Stock_Market_Dataset2 <-
+Stock_Market_Dataset[!is.na(Stock_Market_Dataset$Crude_oil_Vol.), ]
+
+sum(is.na(Stock_Market_Dataset2$Crude_oil_Vol))
+view(Stock_Market_Dataset2)
+```
+
+```{r}
+log_plot <- function(column_name, dataset) {
+  plot_title <- paste("Log Transformation of", column_name)
+  
+  ggplot(dataset, aes_string(x = paste0("", column_name, ""))) +
+    geom_histogram(bins = 30) +
+    labs(title = plot_title, x = paste("", column_name, "", sep = ""), y = "count") +
+    theme_minimal()
+}
+
+log_plot("Apple_Price", Stock_Market_Dataset2)
+log_plot("Apple_Vol.", Stock_Market_Dataset2)
+log_plot("Crude_oil_Price", Stock_Market_Dataset2)
+log_plot("Crude_oil_Vol.", Stock_Market_Dataset2)
+```
+
+```{r}
+Stock_Market_Dataset2$Year <- format(Stock_Market_Dataset2$Date, "%Y")
+Stock_Market_Dataset2$Month <- format(Stock_Market_Dataset2$Date, "%m")
+
+Apple_yearly_high <- aggregate(
+  cbind(Apple_Price, Apple_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+Apple_yearly_low <- aggregate(
+  cbind(Apple_Price, Apple_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+Apple_monthly_high <- aggregate(
+  cbind(Apple_Price, Apple_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+
+Apple_monthly_Low <- aggregate(
+  cbind(Apple_Price, Apple_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+
+
+Crude_oil_yearly_high <- aggregate(
+  cbind(Crude_oil_Price, Crude_oil_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+Crude_oil_yearly_low <- aggregate(
+  cbind(Crude_oil_Price, Crude_oil_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+Crude_oil_monthly_high <- aggregate(
+  cbind(Crude_oil_Price, Crude_oil_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+
+Crude_oil_monthly_Low <- aggregate(
+  cbind(Crude_oil_Price, Crude_oil_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+print(Apple_yearly_high)
+print(Apple_yearly_low)
+print(Apple_monthly_high)
+print(Apple_monthly_Low)
+print(Crude_oil_yearly_high)
+print(Crude_oil_yearly_low)
+print(Crude_oil_monthly_high)
+print(Crude_oil_monthly_Low)
+```
+
+```{r}
+ggplot() +
+  geom_line(mapping = aes(x = Apple_yearly_high$Year, y = Apple_yearly_high$Apple_Price, group = 1)) +
+  xlab("Year")+
+  ylab("Price")
+  ggplot() +
+  geom_line(mapping = aes(x = Apple_yearly_low$Year, y = Apple_yearly_low$Apple_Price, group = 1)) +
+xlab("Year")+
+  ylab("Price")
+ggplot() +
+  geom_line(mapping = aes(x = Apple_monthly_high$Month, y = Apple_monthly_high$Apple_Price, group = 1)) +
+xlab("Month")+
+  ylab("Price")
+ggplot() +
+  geom_line(mapping = aes(x = Apple_monthly_Low$Month, y = Apple_monthly_Low$Apple_Price, group = 1)) +
+xlab("Month")+
+  ylab("Price")
+```
+
+```{r}
+ggplot(Stock_Market_Dataset2, aes(x = Apple_Price, y = Apple_Vol.)) +
+  geom_point(color = "purple") +
+  geom_smooth(color = "darkblue") +
+  xlab("Price")+
+  ylab("Volume")
+```
+
+```{r}
+ggplot(Stock_Market_Dataset2, aes(x = Crude_oil_Price, y = Crude_oil_Vol.)) +
+  geom_point(color = "red") +
+  geom_smooth(color = "black") +
+  xlab("Price")+
+  ylab("Volume")
+```
+
+```{r}
+ggplot(Stock_Market_Dataset2, aes(x = Stock_Market_Dataset2$Date)) +
+  geom_point(aes(y = Apple_Price, color = "apple")) +
+  geom_point(aes(y = Meta_Price, color = "meta") ) +
+  xlab("Date")+
+  ylab("Price") +
+  labs(color = "Apple_Price")
+```
+
+```{r}
+#basic cor.test for each possible tech sector stock
+#creates cor test function USAGE "cortest(df$x, df$y)"
+cortest <- function(x, y) {
+  
+corresult <- cor.test(x, y)
+corresult
+}
+
+print("Prices")
+print("Apple, Meta")
+cortest(Stock_Market_Dataset2$Apple_Price, Stock_Market_Dataset2$Meta_Price)
+
+print("Apple, Google")
+cortest(Stock_Market_Dataset2$Apple_Price, Stock_Market_Dataset2$Google_Price)
+
+print("Google, Meta")
+cortest(Stock_Market_Dataset2$Google_Price, Stock_Market_Dataset2$Meta_Price)
+
+print("Volume")
+print("Apple, Meta")
+cortest(Stock_Market_Dataset2$Apple_Vol., Stock_Market_Dataset2$Meta_Vol.)
+
+print("Apple, Google")
+cortest(Stock_Market_Dataset2$Apple_Vol., Stock_Market_Dataset2$Google_Vol.)
+
+print("Google, Meta")
+cortest(Stock_Market_Dataset2$Google_Vol., Stock_Market_Dataset2$Meta_Vol.)
+
+print("Price vs Volume")
+print("Apple")
+cortest(Stock_Market_Dataset2$Apple_Price, Stock_Market_Dataset2$Apple_Vol.)
+
+print("Google")
+cortest(Stock_Market_Dataset2$Google_Vol., Stock_Market_Dataset2$Google_Price)
+
+print("Meta")
+cortest(Stock_Market_Dataset2$Meta_Vol., Stock_Market_Dataset2$Meta_Price)
+```
+
+```{r}
+ggplot(Stock_Market_Dataset2, aes(Apple_Price, Meta_Price)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Apple_Price, Google_Price)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Google_Price, Meta_Price)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Apple_Vol., Meta_Vol.)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Apple_Vol., Google_Vol.)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Google_Vol., Meta_Vol.)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Apple_Price, Apple_Vol.)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Google_Vol., Google_Price)) +
+  geom_point() +
+  stat_smooth(method = lm)
+
+ggplot(Stock_Market_Dataset2, aes(Meta_Vol., Meta_Price)) +
+  geom_point() +
+  stat_smooth(method = lm)
+```
+
+```{r}
+print("Natural gas price, Crude oil price")
+cortest(Stock_Market_Dataset2$Natural_Gas_Price, Stock_Market_Dataset2$Crude_oil_Price)
+
+print("Natural gas vol, Crude oil vol")
+cortest(Stock_Market_Dataset2$Natural_Gas_Vol., Stock_Market_Dataset2$Crude_oil_Vol.)
+
+print("Crude oil price and vol")
+cortest(Stock_Market_Dataset2$Crude_oil_Price, Stock_Market_Dataset2$Crude_oil_Vol.)
+
+print("Natural gas price and vol")
+cortest(Stock_Market_Dataset2$Natural_Gas_Price, Stock_Market_Dataset2$Natural_Gas_Vol.)
+```
+
+```{r}
+#Stock_Market_Dataset2 %>%
+#tech_cuts <- cut(Stock_Market_Dataset2$Apple_Price, breaks = quantile(Stock_Market_Dataset2$Apple_price))
+#tech_cuts
+sm <- as.numeric(Stock_Market_Dataset2$Apple_Price)
+quartiles <- quantile(sm, prob = c(.25, .5, .75), na.rm = TRUE)
+quantile(sm)
+tech_cuts <- cut(sm, breaks = quantile(sm))
+tech_cuts
+```
+
+```{r}
+sm <- as.numeric(Stock_Market_Dataset2$Apple_Price)
+quartiles <- quantile(sm, prob = c(.25, .5, .75), na.rm = TRUE)
+Stock_Market_Dataset2 <- Stock_Market_Dataset2 %>%
+mutate(
+    apple_price_category2 = cut(
+      Stock_Market_Dataset2$Apple_Price,
+      breaks = c(-Inf, quartiles, Inf),
+      labels = c("Bottom 25%", "25%-50%", "50%-75%", "Top 25%"),
+      include.lowest = TRUE
+    )
+  )
+#view(Stock_Market_Dataset2)
+data.frame(
+  price = Stock_Market_Dataset2$Apple_Price, 
+  category = Stock_Market_Dataset2$apple_price_category
+)
+```
+
+```{r}
+#Ditto from above except its an easier to use function
+#USAGE: create.quantiles(yourdataset$column, "Name of new column in quotes")
+create.quantiles <- function(x, y) {
+sm <- as.numeric(x)
+quartiles <- quantile(sm, prob = c(.25, .5, .75), na.rm = TRUE)
+Stock_Market_Dataset2 <- Stock_Market_Dataset2 %>%
+mutate(
+    meta_price_category = cut(
+      x,
+      breaks = c(-Inf, quartiles, Inf),
+      labels = c("Bottom 25%", "25%-50%", "50%-75%", "Top 25%"),
+      include.lowest = TRUE
+    )
+  )
+data.frame(
+  price = x, 
+  category = (Stock_Market_Dataset2$y)
+)
+}
+#create.quantiles(Stock_Market_Dataset2$Apple_Price, "apple_price_category")
+create.quantiles(Stock_Market_Dataset2$Meta_Price)#, "meta_price_category")
+view(Stock_Market_Dataset2)
+
+```
+
+```{r}
+result <- lm(Apple_Price ~ Apple_Vol., data = Stock_Market_Dataset2)
+print("Predict Apple_Price using Apple_vol.")
+summary(result)
+result <- lm(Meta_Price ~ Meta_Vol., data = Stock_Market_Dataset2)
+print("Predict Meta_Price using Meta_vol.")
+summary(result)
+result <- lm(Google_Price ~ Google_Vol., data = Stock_Market_Dataset2)
+print("Predict Google_Price using Google_vol.")
+summary(result)
+```
+
+```{r}
+#create a new dataset consisting of tech stocks using select
+tech.stock <- select(Stock_Market_Dataset2, Apple_Price, Apple_Vol., Meta_Price, Meta_Vol., Google_Price, Google_Vol.)
+```
+
+```{r}
+#Trying to split dataset into testing and training sets
+
+set.seed(101)
+#apple price split
+sample <- tech.stock$Apple_Price %>% createDataPartition(p = 0.8, list = FALSE)
+atrain <- tech.stock[sample, ]
+atest <- tech.stock[-sample, ]
+atrain
+atest
+#Meta price split
+sample <- tech.stock$Meta_Price %>% createDataPartition(p = 0.8, list = FALSE)
+mtrain <- tech.stock[sample, ]
+mtest <- tech.stock[-sample, ]
+mtrain
+mtest
+#Google price split
+sample <- tech.stock$Google_Price %>% createDataPartition(p = 0.8, list = FALSE)
+gtrain <- tech.stock[sample, ]
+gtest <- tech.stock[-sample, ]
+gtrain
+gtest
+```
+
+```{r}
+#apple price primer
+aprice_lm <- lm(Apple_Price ~ ., data = atrain)
+
+summary(aprice_lm)
+```
+
+```{r}
+#Meta price primer
+mprice_lm <- lm(Meta_Price ~ ., data = mtrain)
+
+summary(mprice_lm)
+```
+
+```{r}
+#Google price primer
+gprice_lm <- lm(Google_Price ~ ., data = gtrain)
+
+summary(gprice_lm)
+```
+
+```{r}
+confint(aprice_lm)
+confint(mprice_lm)
+confint(gprice_lm)
+```
+
+```{r}
+#apple price predict
+apredictions <- aprice_lm %>% predict(atest)
+
+head(apredictions)
+```
+
+```{r}
+#Meta price predict
+mpredictions <- mprice_lm %>% predict(mtest)
+
+head(mpredictions)
+```
+
+```{r}
+#Google price predict
+gpredictions <- gprice_lm %>% predict(gtest)
+
+head(gpredictions)
+```
+
+```{r}
+#apple price actual vs predicted
+aresults_df <- data.frame(
+  Actual = atest$Apple_Price,
+  Predicted = apredictions
+)
+head(aresults_df)
+
+aresults_df %>% ggplot(aes(x = Actual, y = Predicted)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Predicted Apple Price vs Actual Values",
+    x = "Actual Values",
+    y = "Predicted Values"
+  ) +
+  theme_minimal()
+rmse_val <- RMSE(aresults_df$Predicted, aresults_df$Actual)
+print("rmse")
+print(rmse_val)
+```
+
+```{r}
+#meta price actual vs predicted
+mresults_df <- data.frame(
+  Actual = mtest$Meta_Price,
+  Predicted = mpredictions
+)
+head(mresults_df)
+
+mresults_df %>% ggplot(aes(x = Actual, y = Predicted)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Predicted Meta Price vs Actual Values",
+    x = "Actual Values",
+    y = "Predicted Values"
+  ) +
+  theme_minimal()
+rmse_val <- RMSE(mresults_df$Predicted, mresults_df$Actual)
+print("rmse")
+print(rmse_val)
+```
+
+```{r}
+#Google price actual vs predicted
+gresults_df <- data.frame(
+  Actual = gtest$Google_Price,
+  Predicted = gpredictions
+)
+head(gresults_df)
+
+gresults_df %>% ggplot(aes(x = Actual, y = Predicted)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Predicted Google price vs Actual Values",
+    x = "Actual Values",
+    y = "Predicted Values"
+  ) +
+  theme_minimal()
+rmse_val <- RMSE(gresults_df$Predicted, gresults_df$Actual)
+print("rmse")
+print(rmse_val)
+```
+
+```{r}
+
+Mean_apple = mean(tech.stock$Apple_Price, na.rm = TRUE)
+    SD_apple = sd(tech.stock$Apple_Price, na.rm = TRUE)
+Mean_meta = mean(tech.stock$Meta_Price, na.rm = TRUE)
+    SD_meta = sd(tech.stock$Meta_Price, na.rm = TRUE)
+Mean_google = mean(tech.stock$Google_Price, na.rm = TRUE)
+    SD_google = sd(tech.stock$Google_Price, na.rm = TRUE)
+```
+
+```{r}
+tech.stock <- tech.stock %>%
+  mutate(
+    Apple_Classification = case_when(
+      Apple_Price < (Mean_apple - SD_apple) ~ "Low",
+      Apple_Price > (Mean_apple + SD_apple) ~ "High",
+      TRUE ~ "Medium"
+    )
+  )
+
+tech.stock <- tech.stock %>%
+  mutate(
+    Meta_Classification = case_when(
+      Meta_Price < (Mean_meta - SD_meta) ~ "Low",
+      Meta_Price > (Mean_meta + SD_meta) ~ "High",
+      TRUE ~ "Medium"
+    )
+  )
+
+tech.stock <- tech.stock %>%
+  mutate(
+    Google_Classification = case_when(
+      Google_Price < (Mean_google - SD_google) ~ "Low",
+      Google_Price > (Mean_google + SD_google) ~ "High",
+      TRUE ~ "Medium"
+    )
+  )
+view(tech.stock)
+```
+
+```{r}
+tech.stock$Apple_Binary <- ifelse(tech.stock$Apple_Classification == "High", 1, 0)
+tech.stock$Meta_Binary <- ifelse(tech.stock$Meta_Classification == "High", 1, 0)
+tech.stock$Google_Binary <- ifelse(tech.stock$Google_Classification == "High", 1, 0)
+
+view(tech.stock)
+
+```
+
+```{r}
+class_model <- glm(tech.stock$Apple_Binary ~ ., data = train, family = "binomial")
+summary(class_model)
+```
+
+```{r}
+data.frame(tech.stock$Apple_Binary)
+data.frame(tech.stock$Apple_Price)
+data.frame(tech.stock$Meta_Price)
+data.frame(tech.stock$Meta_Vol.)
+data.frame(tech.stock$Google_Price)
+data.frame(tech.stock$Google_Vol.)
+data.frame(tech.stock$Apple_Classification)
+data.frame(tech.stock$Apple_Binary)
+data.frame(tech.stock$Meta_Classification)
+data.frame(tech.stock$Meta_Binary)
+data.frame(tech.stock$Google_Classification)
+data.frame(tech.stock$Google_Binary)
+```

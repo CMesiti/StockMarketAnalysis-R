@@ -1,0 +1,599 @@
+---
+title: "ExploratoryDA"
+format: html
+editor: visual
+---
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
+
+# Reading The Dataset:
+
+```{r}
+Stock_Market_Dataset <- read_csv("Stock_Market_Dataset.csv")
+View(Stock_Market_Dataset)
+
+```
+
+```{r}
+
+Stock_Market_Dataset
+summary(Stock_Market_Dataset)
+
+```
+
+## Data Visualization:
+
+```{r}
+colnames(Stock_Market_Dataset)
+#The columns seem to be syntax correct for R
+```
+
+```{r}
+#basic Variation of bitcoin price
+Stock_Market_Dataset %>% ggplot(aes(Bitcoin_Price)) +
+  geom_histogram()
+#counts are regular and there does not appear to be outliers initially
+#Somewhat even distribution
+#Why are majority of the values around 10,000?
+
+```
+
+```{r}
+#basic variation of bitcoin volume
+Stock_Market_Dataset %>% ggplot(aes(Bitcoin_Vol.)) +
+  geom_histogram()
+
+#odd looking results, there could be some anomalies.
+#normalization can bring better results here. 
+
+
+```
+
+```{r}
+#Basic Variation with Ethereum Stock prices
+Stock_Market_Dataset %>% ggplot(aes(Ethereum_Price)) +
+  geom_histogram()
+#regular distribution
+#more values are around 0-500 and 1500-2000 why?
+#what dates do these correspond to?
+```
+
+```{r}
+
+#Calculate the mean volume of the crypto currencies and compare
+Stock_Market_Dataset$Date <- as.Date(Stock_Market_Dataset$Date, format = ("%d-%m-%Y"))
+```
+
+```{r}
+#covariation of bitcoin volume and bitcoin price
+Stock_Market_Dataset %>%
+  ggplot(aes(log(Bitcoin_Vol.), Bitcoin_Price, color = Date)) +
+  geom_point()+
+  labs(title = "Bitcoin price vs Volume over time")
+
+```
+
+```{r}
+Stock_Market_Dataset %>% ggplot(aes(x=Date, y=Ethereum_Price)) +
+  geom_line()
+
+```
+
+```{r}
+Stock_Market_Dataset %>% ggplot(aes(x=Date, y=Bitcoin_Price)) +
+  geom_line()
+  
+```
+
+```{r}
+#mean of the volume
+
+crypto <- Stock_Market_Dataset %>% select(Date, 
+                                          Bitcoin_Price,
+                                          Bitcoin_Vol.,
+                                          Ethereum_Price,
+                                          Ethereum_Vol.)
+crypto
+
+```
+
+```{r}
+```
+
+```{r}
+crypto %>%
+  ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Bitcoin_Price, color = "Bitcoin")) + 
+  geom_line(aes(y = Ethereum_Price, color = "Ethereum")) + 
+  labs(x = "Date", 
+       y = "Price (USD)", 
+       color = "Cryptocurrency")
+
+```
+
+```{r}
+#get the mean crypto volumes
+crypto %>% ggplot() +
+  geom_col(aes(x = 'bitcoin_mean', y= mean(Bitcoin_Vol.), color = 'bit_vol_mean')) +
+  geom_col(aes(x = 'ethereum_mean', y= mean(Ethereum_Vol.), color = 'Ethereum_vol_mean')) +
+  labs(x= 'Currencies', 
+       y= 'Mean Trading Volumes')
+```
+
+```{r}
+
+#mean, median, stdDeviation of price and volume
+#volume over time/requires normalization
+
+crypto %>% ggplot(aes(Date, log(Bitcoin_Vol.))) +
+  geom_line()
+
+```
+
+```{r}
+
+
+#before normalization 
+crypto %>% ggplot(aes(Date, Bitcoin_Vol.)) +
+  geom_line()
+
+```
+
+```{r}
+
+
+crypto %>% ggplot(aes(x= Date)) +
+  geom_line(aes(y = log(Bitcoin_Price), color = "Price")) +
+  geom_line(aes(y = log(Bitcoin_Vol.), color = "Volume")) +
+  labs(title = "Bitcoin Price vs Volume",
+       y= "Normalized Scale")
+
+
+```
+
+```{r}
+# can we check the distribution over the months 
+crypto %>% ggplot(aes(log(Bitcoin_Vol.))) +
+  geom_histogram()
+
+
+```
+
+## Outlier Handling:
+
+```{r}
+#Determine what values are 3 sd from the mean for crypto price/vol
+bit_mean_vol = mean(crypto$Bitcoin_Vol., na.rm = TRUE)
+bit_median_vol = median(crypto$Bitcoin_Vol., na.rm = TRUE)
+bit_std_vol = sd(crypto$Bitcoin_Vol., na.rm = TRUE)
+
+bit_mean_price = mean(crypto$Bitcoin_Price, na.rm = TRUE)
+bit_median_price = median(crypto$Bitcoin_Price, na.rm = TRUE)
+bit_std_price = sd(crypto$Bitcoin_Price, na.rm = TRUE)
+
+
+#Outliers above and below the bitcoin volume, 12 Values
+outlier_vol_bit <- crypto %>%
+  filter(abs(Bitcoin_Vol. - bit_mean_vol) > 3 * bit_std_vol) %>%
+  select(Bitcoin_Vol.) %>% 
+  mutate(Bitcoin_Vol.= log(Bitcoin_Vol.))
+
+view(outlier_vol_bit)
+
+
+
+# There are no values outside 3 sd from the mean in bitcoin prices.
+outlier_price_bit <- crypto %>%
+  filter(abs(Bitcoin_Price - bit_mean_price) > 3 * bit_std_price) %>%
+  select(Bitcoin_Price) %>% 
+  mutate(Bitcoin_Price= Bitcoin_Price)
+
+view(outlier_price_bit)
+#count the number of NA values in each column of the stock dataset
+#focus on columns
+```
+
+```{r}
+crypto %>% ggplot()+
+  geom_histogram(aes(log(Bitcoin_Vol.)))+
+  labs(title = "Bitcoin Volume Normalized")
+
+crypto %>% ggplot()+
+  geom_histogram(aes(log((Ethereum_Vol.))))+
+  labs(title = "Ethereum Volume Normalized")
+
+```
+
+```{r}
+outlier_vol_eth <- crypto %>% 
+  filter(abs(Ethereum_Vol. - mean(Ethereum_Vol.)) > 3 * sd(Ethereum_Vol.)) %>%
+  select(Ethereum_Vol.) %>% 
+  mutate(Ethereum_Vol.= log(Ethereum_Vol.))
+outlier_vol_eth
+```
+
+```{r}
+remove_outliers <- function(df, col_name) {
+  q1 <- quantile(df[[col_name]], 0.25, na.rm = TRUE)
+  q3 <- quantile(df[[col_name]], 0.75, na.rm = TRUE)
+  iqr <- q3 - q1
+  lower <- q1 - 1.5 * iqr
+  upper <- q3 + 1.5 * iqr
+  df[df[[col_name]] >= lower & df[[col_name]] <= upper, ]
+}
+
+without_outliers <- remove_outliers(crypto, "Bitcoin_Vol.")
+
+without_outliers %>% 
+  ggplot(aes(Date))+
+  geom_line(aes(y = log(Bitcoin_Price), color = "Price"))+
+  geom_line(aes(y = log(Bitcoin_Vol.), color = "Volume"))
+              
+```
+
+```{r}
+#percentage and number of outliers within crypto columns
+summary(crypto)
+```
+
+```{r}
+
+#applying the log can increase the number of outliers when visualizing the dataset since the inter quartile range is smaller.
+crypto %>%
+  mutate(log_bit_vol = log(Bitcoin_Vol.)) %>% 
+  ggplot()+
+  geom_boxplot(mapping = aes(log_bit_vol))
+
+crypto %>% 
+  mutate(log_eth_vol = log(Ethereum_Vol.)) %>% 
+  ggplot()+
+  geom_boxplot(mapping = aes(log_eth_vol))
+
+
+```
+
+```{r}
+#check the percent of outliers outside the IQR
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .75)
+  #calc IQR
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean(df < lower | df > upper) *100
+}
+
+Vars = c("Bitcoin_Price", "Bitcoin_Vol.", "Ethereum_Price", "Ethereum_Vol.")
+
+crypto_iqr_outliers <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(crypto[, Vars], percent_outliers)
+)
+
+crypto_iqr_outliers
+
+```
+
+```{r}
+#We want to visualize the relationship with price and volume log normalized for each cyrpto variables
+
+#first distributions
+
+crypto %>% ggplot()+
+  geom_point(aes(x=log(Bitcoin_Price), y=log(Bitcoin_Vol.), color = Date))+
+  geom_smooth(aes(x=log(Bitcoin_Price), y=log(Bitcoin_Vol.)))+
+  labs(title = "Bitcoin Price vs Volume")
+
+crypto %>% ggplot(aes(x=log(Ethereum_Price), y=log(Ethereum_Vol.), color = Date))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Ethereum Price vs Volume")
+```
+
+## Data Transformations
+
+```{r}
+
+#Some additional visualizations on bitcoin and ethereum over time
+crypto %>% ggplot(aes(x=Date))+
+  geom_line(aes(y=log(Ethereum_Vol.), color = "Ethereum"))+
+  geom_line(aes(y=log(Bitcoin_Vol.), color = "Bitcoin"))+
+  labs(title = "Ethereum vs Bitcoin Volume over time")
+
+crypto %>% ggplot(aes(x=Date))+
+  geom_line(aes(y=log(Ethereum_Price), color = "Ethereum"))+
+  geom_line(aes(y=log(Bitcoin_Price), color = "Bitcoin"))+
+  labs(title = "Ethereum vs Bitcoin Volume over time")
+  
+```
+
+```{r}
+
+#Percentage and number of missing values within crypto columns
+summary(is.na(crypto))
+```
+
+```{r}
+
+install.packages("lubridate")
+```
+
+```{r}
+library(lubridate)
+```
+
+```{r}
+
+
+crypto_summary <- crypto %>%
+  mutate(
+    Year = year(Date),
+    Month = month(Date, label = TRUE, abbr = TRUE)  # Jan, Feb, etc.
+  ) %>%
+  group_by(Month) %>%
+  summarise(
+    Max_Bitcoin = max(Bitcoin_Price, na.rm = TRUE),
+    Min_Bitcoin = min(Bitcoin_Price, na.rm = TRUE),
+    Max_Ethereum = max(Ethereum_Price, na.rm = TRUE),
+    Min_Ethereum = min(Ethereum_Price, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+view(crypto_summary)
+```
+
+```{r}
+crypto <- crypto %>%
+  mutate(
+    Eth_Price_Level = ntile(Ethereum_Price, 3),  # 1 = low, 2 = medium, 3 = high
+    Eth_Price_Level = case_when(
+      Eth_Price_Level == 1 ~ "Low",
+      Eth_Price_Level == 2 ~ "Medium",
+      Eth_Price_Level == 3 ~ "High"
+    )
+  )
+
+crypto <- crypto %>%
+  mutate(
+    Bit_Price_Level = ntile(Bitcoin_Price, 3),  # 1 = low, 2 = medium, 3 = high
+    Bit_Price_Level = case_when(
+      Bit_Price_Level == 1 ~ "Low",
+      Bit_Price_Level == 2 ~ "Medium",
+      Bit_Price_Level == 3 ~ "High"
+    )
+  )
+
+view(crypto)
+```
+
+```{r}
+summary(crypto)
+```
+
+```{r}
+price_stats <- crypto %>%
+  summarise(
+    Mean_Eth = mean(Ethereum_Price, na.rm = TRUE),
+    SD_Eth = sd(Ethereum_Price, na.rm = TRUE)
+  )
+
+crypto <- crypto %>%
+  mutate(
+    Eth_Classification = case_when(
+      Ethereum_Price < (price_stats$Mean_Eth - price_stats$SD_Eth) ~ "Low",
+      Ethereum_Price > (price_stats$Mean_Eth + price_stats$SD_Eth) ~ "High",
+      TRUE ~ "Medium"
+    )
+  )
+
+view(crypto)
+```
+
+```{r}
+price_stats <- crypto %>%
+  summarise(
+    Mean_Bit = mean(Bitcoin_Price, na.rm = TRUE),
+    SD_Bit = sd(Bitcoin_Price, na.rm = TRUE)
+  )
+
+#less than 1 SD ~LOW, Greater than 1 SD ~HIGH, Within ~Med
+crypto <- crypto %>%
+  mutate(
+    Bit_Classification = case_when(
+      Bitcoin_Price < (price_stats$Mean_Bit - price_stats$SD_Bit) ~ "Low",
+      Bitcoin_Price > (price_stats$Mean_Bit + price_stats$SD_Bit) ~ "High",
+      TRUE ~ "Medium"
+    )
+  )
+view(crypto)
+```
+
+```{r}
+crypto %>% ggplot()+
+  geom_bar(aes(Bit_Classification))
+```
+
+```{r}
+crypto %>% ggplot()+
+  geom_bar(aes(Eth_Classification))
+```
+
+![]()
+
+```{r}
+#Count the number of Highs and Lows Per Month
+crypto %>% arrange(Date)
+#here we can tell not every day is recorded
+```
+
+```{r}
+crypto <- crypto %>%
+  arrange(Date) %>% 
+  mutate(btc_weekly_return = (Bitcoin_Price/lag(Bitcoin_Price, 7))-1) %>% 
+  mutate(btc_weekly_change = (Bitcoin_Price - lag(Bitcoin_Price, 7))-1)
+
+crypto_view <- crypto %>% 
+  arrange(desc(btc_weekly_return)) %>% 
+  select(Date, btc_weekly_return, btc_weekly_change, Bitcoin_Price)
+  
+crypto_view
+```
+
+```{r}
+
+#Calculate the return, daily return.
+
+crypto %>% ggplot() +
+  geom_line(aes(x=Date, y=btc_weekly_return))
+```
+
+```{r}
+covid_crash <- crypto %>% 
+  filter(Date >= "2020-02-15" & Date <= "2020-03-30") 
+
+bull_run <- crypto %>% 
+  filter(Date >= "2021-01-01" & Date <= "2021-11-30")
+
+# Summary stats
+summary(covid_crash$Bitcoin_Price)
+summary(bull_run$Bitcoin_Price)
+```
+
+```{r}
+vwap_week <- crypto %>%
+  group_by(week = floor_date(Date, "week")) %>%
+  summarise(
+    VWAP = sum(Bitcoin_Price * Bitcoin_Vol., na.rm = TRUE) / sum(Bitcoin_Vol., na.rm = TRUE)
+  )
+
+view(vwap_week)
+```
+
+```{r}
+```
+
+```{r}
+monthly_counts <- crypto %>%
+  mutate(Year = year(Date),
+         Month = month(Date, label = TRUE)) %>%
+  group_by(Year, Month, Bit_Classification) %>%
+  summarise(Count = n(), .groups = 'drop')
+
+ggplot(monthly_counts, aes(x = Month, y = Count, fill = Bit_Classification)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~Year) +
+  labs(title = "Monthly High/Low Classifications by Year",
+       y = "Count", x = "Month") +
+  theme_minimal()
+```
+
+```{r}
+view(crypto)
+```
+
+```{r}
+
+#Work on some analysis with VWAP, Correlation with trading volumes, crypto prices, and tech stocks.
+#1-2 Advanced graphs
+#Linear Regression
+#Logistic Regression, Multiple Regression
+#Decision Tree
+
+
+
+#Correlation with trading volumes and prices, aswell as other graphs, get coefficients for all and determine significance
+
+cor.test(crypto$Bitcoin_Price, crypto$Bitcoin_Vol.)
+cor.test(crypto$Bitcoin_Price, crypto$Ethereum_Price)
+cor.test(crypto$Ethereum_Price, crypto$Ethereum_Vol.)
+cor.test(crypto$Bitcoin_Vol., crypto$Ethereum_Vol.)
+
+```
+
+```{r}
+#Simple linear regression
+lin_model <- lm(Bitcoin_Price ~ Bitcoin_Vol. + Ethereum_Price, data = crypto)
+
+# Summary
+summary(lin_model)
+```
+
+```{r}
+#Simple linear regression
+lin_model <- lm(Bitcoin_Price ~ Ethereum_Price, data = crypto)
+
+# Summary
+summary(lin_model)
+```
+
+```{r}
+ggplot(crypto, aes(x = Ethereum_Price, y = Bitcoin_Price)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(title = "Bitcoin Price vs Ethereum Price with Regression Line",
+       x = "Ethereum Price",
+       y = "Bitcoin Price")
+```
+
+```{r}
+#classify between High, med/low
+
+# Collapse into Binary: High = 1, Medium/Low = 0
+crypto$Bit_Class_Binary <- ifelse(crypto$Bit_Classification == "High", 1, 0)
+# Multiple logistic regression
+multi_logit_model <- glm(Bit_Class_Binary ~ Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + btc_weekly_return, 
+                         data = crypto, family = binomial)
+
+# Summary
+summary(multi_logit_model)
+
+```
+
+```{r}
+# Remove rows with any NA values in relevant columns
+crypto_clean <- crypto %>%
+  filter(!is.na(Bitcoin_Vol.), !is.na(Ethereum_Price),
+         !is.na(Ethereum_Vol.), !is.na(btc_weekly_return))
+
+# Now re-fit the model on crypto_clean
+multi_logit_model <- glm(Bit_Class_Binary ~ Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + btc_weekly_return,
+                         family = binomial, data = crypto_clean)
+
+# Predict on the cleaned dataset
+crypto_clean$multi_predicted_prob <- predict(multi_logit_model, type = "response")
+
+# Create a binary prediction
+crypto_clean$multi_predicted_class <- ifelse(crypto_clean$multi_predicted_prob > 0.5, 1, 0)
+
+# Confusion matrix
+table(Actual = crypto_clean$Bit_Class_Binary, Predicted = crypto_clean$multi_predicted_class)
+```
+
+```{r}
+install.packages("nnet")
+library(nnet)
+```
+
+```{r}
+view(crypto)
+```
+
+```{r}
+# Multinomial Logistic Regression
+crypto$Bit_Classification <- as.factor(crypto$Bit_Classification)
+
+multi_class_model <- multinom(Bit_Classification ~ Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + btc_weekly_return,
+                              data = crypto)
+
+summary(multi_class_model)
+```
+
+```{r}
+write.csv(crypto,"crypto.csv") 
+```
