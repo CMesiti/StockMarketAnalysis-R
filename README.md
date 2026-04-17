@@ -1,4 +1,5 @@
 # Analytics on Stock Market Data:
+### [Analytics Report](https://github.com/CMesiti/StockMarketAnalysis-R/blob/main/Stock_Market_Analysis_Report.pdf)
 
 - Applied exploratory data analysis, statistical modeling, and data visualization techniques to high-value stock datasets, examining distributions and relationships across categorical and numerical features.
 
