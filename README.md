@@ -1,1 +1,1 @@
-# StockMarketAnalysis-R
+# Simple Analytics on Past Crypto Data

@@ -1,0 +1,793 @@
+```{r}
+# install and load packages
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("dplyr")
+library(dplyr)
+install.packages("lubridate")
+library(lubridate)
+install.packages("shiny")
+library(shiny)
+# load and display dataset
+stocks <- read.csv("Stock_Market_Dataset.csv")
+# apply date formatting
+stocks$Date <- as.Date(stocks$Date, format = "%d-%m-%Y")
+# change variables into numeric values
+stocks$Bitcoin_Price <- as.numeric(gsub(",", "", stocks$Bitcoin_Price))
+stocks$Bitcoin_Vol. <- as.numeric(gsub(",", "", stocks$Bitcoin_Vol.))
+stocks$Ethereum_Price <- as.numeric(gsub(",", "", stocks$Ethereum_Price))
+stocks$Ethereum_Vol. <- as.numeric(gsub(",", "", stocks$Ethereum_Vol.))
+stocks$Natural_Gas_Price <- as.numeric(gsub(",", "", stocks$Natural_Gas_Price))
+stocks$Natural_Gas_Vol. <- as.numeric(gsub(",", "", stocks$Natural_Gas_Vol.))
+stocks$Crude_oil_Price <- as.numeric(gsub(",", "", stocks$Crude_oil_Price))
+stocks$Crude_oil_Vol. <- as.numeric(gsub(",", "", stocks$Crude_oil_Vol.))
+stocks$Meta_Price <- as.numeric(gsub(",", "", stocks$Meta_Price))
+stocks$Meta_Vol. <- as.numeric(gsub(",", "", stocks$Meta_Vol.))
+stocks$Google_Price <- as.numeric(gsub(",", "", stocks$Google_Price))
+stocks$Google_Vol. <- as.numeric(gsub(",", "", stocks$Google_Vol.))
+stocks$Apple_Price <- as.numeric(gsub(",", "", stocks$Apple_Price))
+stocks$Apple_Vol. <- as.numeric(gsub(",", "", stocks$Apple_Vol.))
+stocks$S.P_500_Price <- as.numeric(gsub(",", "", stocks$S.P_500_Price))
+stocks$Nasdaq_100_Price <- as.numeric(gsub(",", "", stocks$Nasdaq_100_Price))
+stocks$Nasdaq_100_Vol. <- as.numeric(gsub(",", "", stocks$Nasdaq_100_Vol.))
+View(stocks)
+```
+
+```{r}
+# basic visualization for S&P 500 Price over time
+stocks %>% ggplot(aes(x = Date, y = S.P_500_Price)) + 
+  geom_line() + 
+  labs(title = "S&P 500 Price over Time")
+
+# basic plot of S&P 500 Price Distribution
+stocks %>% ggplot(aes(S.P_500_Price)) + 
+  geom_histogram() + 
+  labs(title = "S&P 500 Price Distribution")
+```
+
+```{r}
+# basic visualization for Nasdaq Price over time
+stocks %>% ggplot(aes(x = Date, y = Nasdaq_100_Price)) + 
+  geom_line()
+
+# basic plot of Nasdaq Price Distribution
+stocks %>% ggplot(aes(Nasdaq_100_Price)) + 
+  geom_histogram()
+```
+
+```{r}
+# basic visualization for Nasdaq Volume over time
+stocks %>% ggplot(aes(x = Date, y = Nasdaq_100_Vol.)) + 
+  geom_line()
+
+# basic plot of Nasdaq Volume Distribution
+stocks %>% ggplot(aes(Nasdaq_100_Vol.)) + 
+  geom_histogram()
+```
+
+```{r}
+# basic visualization for Natural Gas Price over time
+stocks %>% ggplot(aes(x = Date, y = Natural_Gas_Price)) + 
+  geom_line()
+
+# basic plot of Natural Gas Price Distribution
+stocks %>% ggplot(aes(Natural_Gas_Price)) + 
+  geom_histogram()
+```
+
+
+```{r}
+# basic visualization for Natural Gas Volume over time
+stocks %>% ggplot(aes(x = Date, y = Natural_Gas_Vol.)) + 
+  geom_line()
+
+# basic plot of Natural Gas Volume Distribution
+stocks %>% ggplot(aes(Natural_Gas_Vol.)) + 
+  geom_histogram()
+```
+
+```{r}
+# Cryptocurrencies price over time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Bitcoin_Price, color = "Bitcoin_Price")) + 
+  geom_line(aes(y = Ethereum_Price, color = "Ethereum_Price")) + 
+  labs(title = "Cryptocurrencies Price over Time",
+       x = "Date",
+       y = "Price (USD)",
+       color = "Cryptocurrency")
+
+# Cryptocurrencies volume over time
+stocks %>% 
+  ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Bitcoin_Vol., color = "Bitcoin Volume")) + 
+  geom_line(aes(y = Ethereum_Vol., color = "Ethereum Volume")) + 
+  scale_y_log10() + 
+  labs(title = "Cryptocurrencies Volume over Time (Log Scale)",
+    x = "Date",
+    y = "Volume",
+    color = "Cryptocurrency"
+  )
+```
+
+```{r}
+# Energy Commodities Price over Time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Natural_Gas_Price, color = "Natural Gas Price")) + 
+  geom_line(aes(y = Crude_oil_Price, color = "Crude Oil Price")) + 
+  labs(title = "Energy Commodities Price over Time",
+       x = "Date",
+       y = "Price (USD)",
+       color = "Energy Commodity")
+
+# Energy Commodities Volume over Time
+ec <- stocks[c("Date", "Natural_Gas_Vol.", "Crude_oil_Vol.")]
+ec_MVR <- ec %>% drop_na()
+ec_MVR %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Natural_Gas_Vol., color = "Natural Gas Volume")) + 
+  geom_line(aes(y = Crude_oil_Vol., color = "Crude Oil Volume")) +
+  scale_y_log10() + 
+  labs(title = "Energy Commodities Volume over Time (Log Scale)",
+       x = "Date",
+       y = "Volume",
+       color = "Energy Commodity")
+```
+
+```{r}
+# Index Funds Price over Time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = S.P_500_Price, color = "S&P 500 Price")) + 
+  geom_line(aes(y = Nasdaq_100_Price, color = "NASDAQ Price")) + 
+  labs(x = "Date",
+       y = "Price (USD)",
+       color = "Index Fund")
+
+# Index Funds Volume over Time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Nasdaq_100_Vol., color = "NASDAQ Volume")) + 
+  scale_y_log10() +
+  labs(title = "Index Funds Volume over Time (Log Scale)",
+       x = "Date",
+       y = "Volume",
+       color = "Index Fund")
+```
+
+```{r}
+# Tech Stocks Price over time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Apple_Price, color = "Apple Price")) + 
+  geom_line(aes(y = Meta_Price, color = "Meta Price")) + 
+  geom_line(aes(y = Google_Price, color = "Google Price")) + 
+  labs(x = "Date",
+       y = "Price (USD)",
+       color = "Stock")
+
+# Tech Stocks Volume over time
+stocks %>% ggplot(aes(x = Date)) + 
+  geom_line(aes(y = Apple_Vol., color = "Apple Volume")) + 
+  geom_line(aes(y = Meta_Vol., color = "Meta Volume")) + 
+  geom_line(aes(y = Google_Vol., color = "Google Volume")) + 
+  scale_y_log10() +
+  labs(title = "Tech Stocks Volume over Time (Log Scale)",
+       x = "Date",
+       y = "Volume",
+       color = "Stock")
+```
+
+```{r}
+# Mean Trading Volume of Nasdaq against all Columns
+bitcoin_v_mean <- mean(stocks$Bitcoin_Vol., na.rm = TRUE)
+ethereum_v_mean <- mean(stocks$Ethereum_Vol., na.rm = TRUE)
+natural_gas_v_mean <- mean(stocks$Natural_Gas_Vol., na.rm = TRUE)
+crude_oil_v_mean <- mean(stocks$Crude_oil_Vol., na.rm = TRUE)
+meta_v_mean <- mean(stocks$Meta_Vol., na.rm = TRUE)
+google_v_mean <- mean(stocks$Google_Vol., na.rm = TRUE)
+apple_v_mean <- mean(stocks$Apple_Vol., na.rm = TRUE)
+nasdaq_v_mean <- mean(stocks$Nasdaq_100_Vol., na.rm = TRUE)
+
+vmd <- data.frame(
+  Index = c("Nasdaq 100", "Bitcoin", "Ethereum", "Natural Gas", "Crude Oil", "Meta", "Google", "Apple"),
+  Mean_Vol. = c(nasdaq_v_mean, bitcoin_v_mean, ethereum_v_mean, natural_gas_v_mean, crude_oil_v_mean, meta_v_mean, google_v_mean, apple_v_mean))
+vmd$Index <- factor(vmd$Index, levels = c("Nasdaq 100", "Bitcoin", "Ethereum", "Natural Gas", 
+                                          "Crude Oil", "Meta", "Google", "Apple"))
+ggplot(vmd, aes(x = Index, y = Mean_Vol., fill = Index)) + 
+  geom_col() +
+  scale_y_continuous(trans = "sqrt") +
+  labs(title = "Mean Trading Volume of Nasdaq against all Columns (sqrt Transformation)",
+       x = "Asset",
+       y = "Mean Trading Volume") +
+  theme_minimal()
+```
+
+```{r}
+# Bitcoin Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Bitcoin_Price)) + 
+  labs(title = "Bitcoin Price Box Plot",
+       y = "Bitcoin Price")
+```
+
+```{r}
+# Bitcoin Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Bitcoin_Vol.)) + 
+  labs(title = "Bitcoin Volume Box Plot",
+       y = "Bitcoin Volume")
+```
+
+```{r}
+# Ethereum Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Ethereum_Price)) + 
+  labs(title = "Ethereum Price Box Plot",
+       y = "Ethereum Price")
+```
+
+```{r}
+# Ethereum Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Ethereum_Vol.)) + 
+  labs(title = "Ethereum Volume Box Plot",
+       y = "Ethereum Volume")
+```
+
+```{r}
+# Natural Gas Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Natural_Gas_Price)) + 
+  labs(title = "Natural Gas Price Box Plot",
+       y = "Natural Gas Price")
+```
+
+```{r} 
+# Natural Gas Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Natural_Gas_Vol.)) + 
+  labs(title = "Natural Gas Volume Box Plot",
+       y = "Natural Gas Volume")
+```
+
+```{r}
+# Crude Oil Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Crude_oil_Price)) + 
+  labs(title = "Crude Oil Price Box Plot",
+       y = "Crude Oil Price")
+```
+
+```{r}
+# Crude Oil Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Crude_oil_Vol.)) + 
+  labs(title = "Crude Oil Volume Box Plot",
+       y = "Crude Oil Volume")
+```
+
+```{r}
+# Meta Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Meta_Price)) + 
+  labs(title = "Meta Price Box Plot",
+       y = "Meta Price")
+```
+
+```{r}
+# Meta Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Meta_Vol.)) + 
+  labs(title = "Meta Volume Box Plot",
+       y = "Meta Volume")
+```
+
+```{r}
+# Google Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Google_Price)) + 
+  labs(title = "Google Price Box Plot",
+       y = "Google Price")
+```
+
+```{r}
+# Google Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Google_Vol.)) + 
+  labs(title = "Google Volume Box Plot",
+       y = "Google Volume")
+```
+
+```{r}
+# Apple Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Apple_Price)) + 
+  labs(title = "Apple Price Box Plot",
+       y = "Apple Price")
+```
+
+```{r}
+# Apple Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Apple_Vol.)) + 
+  labs(title = "Apple Volume Box Plot",
+       y = "Apple Volume")
+```
+
+```{r}
+# S&P 500 Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = S.P_500_Price)) + 
+  labs(title = "S&P 500 Price Box Plot",
+       y = "S&P 500 Price")
+```
+
+```{r}
+# NASDAQ Price Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Nasdaq_100_Price)) + 
+  labs(title = "NASDAQ Price Box Plot",
+       y = "NASDAQ Price")
+```
+
+```{r}
+# NASDAQ Volume Box Plot
+stocks %>% ggplot() + 
+  geom_boxplot(mapping = aes(y = Nasdaq_100_Vol.)) + 
+  labs(title = "NASDAQ Volume Box Plot",
+       y = "NASDAQ Volume")
+```
+
+```{r}
+# store columns for analysis in Project_stocks and create summary
+Project_stocks <- stocks[c("Date", "Bitcoin_Price", "Bitcoin_Vol.", "Ethereum_Price", "Ethereum_Vol.", "Natural_Gas_Price", "Natural_Gas_Vol.", "Crude_oil_Price", "Crude_oil_Vol.", "Meta_Price", "Meta_Vol.", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.", "S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")]
+summary(Project_stocks)
+```
+
+```{r}
+# check for missing values in Project_stocks
+summary(is.na(Project_stocks))
+```
+
+```{r}
+# remove missing values, get new summary, and check number of rows removed
+Project_stocks_MVR <- Project_stocks %>% drop_na()
+summary(Project_stocks_MVR)
+nrow(Project_stocks) - nrow(Project_stocks_MVR)
+```
+
+```{r}
+# calculate percentage of outliers
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (df < lower | df > upper) *100
+}
+Vars = c("Bitcoin_Price", "Bitcoin_Vol.", "Ethereum_Price", "Ethereum_Vol.", "Natural_Gas_Price", "Natural_Gas_Vol.", "Crude_oil_Price", "Crude_oil_Vol.", "Meta_Price", "Meta_Vol.", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.", "S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")
+ProjectStocks_iqr_outliers <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Project_stocks_MVR[, Vars], percent_outliers)
+)
+ProjectStocks_iqr_outliers
+```
+
+```{r}
+# remove outliers and check number of rows removed
+Project_stocks_Clean <- Project_stocks_MVR %>%
+  mutate(across(where(is.double) & !all_of("Date"), ~ {
+    Q1 <- quantile(.x, 0.25)
+    Q3 <- quantile(.x, 0.75)
+    IQR_val <- Q3 - Q1
+    lower <- Q1 - 1.5 * IQR_val
+    upper <- Q3 + 1.5 * IQR_val
+    ifelse(.x < lower | .x > upper, NA, .x)
+  })) %>%
+  drop_na()
+nrow(Project_stocks_MVR) - nrow(Project_stocks_Clean)
+```
+
+```{r}
+# check percentage of outliers after removal
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (df < lower | df > upper) *100
+}
+Vars = c("Bitcoin_Price", "Bitcoin_Vol.", "Ethereum_Price", "Ethereum_Vol.", "Natural_Gas_Price", "Natural_Gas_Vol.", "Crude_oil_Price", "Crude_oil_Vol.", "Meta_Price", "Meta_Vol.", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.", "S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")
+ProjectStocks_iqr_outliers2 <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Project_stocks_Clean[, Vars], percent_outliers)
+)
+ProjectStocks_iqr_outliers2
+```
+
+```{r}
+# Store index fund columns in Index_Funds and create summary
+Index_Funds <- stocks[c("Date", "S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")]
+summary(Index_Funds)
+```
+
+```{r}
+# check for missing values in Index_Funds
+summary(is.na(Index_Funds))
+```
+
+```{r}
+# remove missing values, get new summary, and check number of rows removed
+Index_Funds_MVR <- Index_Funds %>% drop_na()
+summary(Index_Funds_MVR)
+nrow(Index_Funds) - nrow(Index_Funds_MVR)
+```
+
+```{r}
+# calculate percentage of outliers
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (df < lower | df > upper) *100
+}
+Vars = c("S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")
+indexFunds_iqr_outliers <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Index_Funds_MVR[, Vars], percent_outliers)
+)
+indexFunds_iqr_outliers
+```
+
+```{r}
+# remove outliers and check number of rows removed
+Index_Funds_Clean <- Index_Funds_MVR %>%
+  mutate(across(where(is.double) & !all_of("Date"), ~ {
+    Q1 <- quantile(.x, 0.25)
+    Q3 <- quantile(.x, 0.75)
+    IQR_val <- Q3 - Q1
+    lower <- Q1 - 1.5 * IQR_val
+    upper <- Q3 + 1.5 * IQR_val
+    ifelse(.x < lower | .x > upper, NA, .x)
+  })) %>%
+  drop_na()
+nrow(Index_Funds_MVR) - nrow(Index_Funds_Clean)
+```
+
+```{r}
+# check percentage of outliers after removal
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (df < lower | df > upper) *100
+}
+Vars = c("S.P_500_Price", "Nasdaq_100_Price", "Nasdaq_100_Vol.")
+indexFunds_iqr_outliers2 <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Index_Funds_Clean[, Vars], percent_outliers)
+)
+indexFunds_iqr_outliers2
+```
+
+```{r}
+# Distribution of Nasdaq volume with missing values and outliers removed
+Index_Funds_Clean %>% ggplot(aes(Nasdaq_100_Vol.)) + 
+  geom_histogram() + 
+  labs(title = "Nasdaq Volume Distribution (Missing Values and Outliers Removed)",
+       x = "Nasdaq 100 Volume",
+       y = "Count")
+```
+
+```{r}
+# Distribution of Nasdaq volume over time without missing values and outliers removed, log function applied
+stocks %>% ggplot(aes(Nasdaq_100_Vol.)) + 
+  geom_histogram() + 
+  labs(title = "Nasdaq Volume Over Time (only log function applied)",
+       x = "Nasdaq 100 Volume",
+       y = "Count")
+```
+
+```{r}
+# yearly highs and lows of index fund prices and volumes
+Index_Funds_Yearly_Summary <- Index_Funds_Clean %>% 
+  mutate(
+    Year = year(Date),
+    Month = month(Date, label = TRUE, abbr = TRUE)
+  ) %>% 
+  group_by(Year) %>% 
+  summarise(
+    Max_S.P_500_Price = max(S.P_500_Price, na.rm = TRUE),
+    Min_S.P_500_Price = min(S.P_500_Price, na.rm = TRUE),
+    Max_Nasdaq_100_Price = max(Nasdaq_100_Price, na.rm = TRUE),
+    Min_Nasdaq_100_Price = min(Nasdaq_100_Price, na.rm = TRUE),
+    Max_Nasdaq_100_Vol. = max(Nasdaq_100_Vol., na.rm = TRUE),
+    Min_Nasdaq_100_Vol. = min(Nasdaq_100_Vol., na.rm = TRUE),
+    .groups = 'drop'
+  )
+view(Index_Funds_Yearly_Summary)
+```
+
+```{r}
+# monthly highs and lows of index fund prices and volumes
+Index_Funds_Monthly_Summary <- Index_Funds_Clean %>% 
+  mutate(
+    Year = year(Date),
+    Month = month(Date, label = TRUE, abbr = TRUE)
+  ) %>% 
+  group_by(Month) %>% 
+  summarise(
+    Max_S.P_500_Price = max(S.P_500_Price, na.rm = TRUE),
+    Min_S.P_500_Price = min(S.P_500_Price, na.rm = TRUE),
+    Max_Nasdaq_100_Price = max(Nasdaq_100_Price, na.rm = TRUE),
+    Min_Nasdaq_100_Price = min(Nasdaq_100_Price, na.rm = TRUE),
+    Max_Nasdaq_100_Vol. = max(Nasdaq_100_Vol., na.rm = TRUE),
+    Min_Nasdaq_100_Vol. = min(Nasdaq_100_Vol., na.rm = TRUE),
+    .groups = 'drop'
+  )
+view(Index_Funds_Monthly_Summary)
+```
+
+```{r} 
+# scatter plot of Nasdaq 100 price vs volume using cleaned data
+ggplot(Index_Funds_Clean, aes(x = Nasdaq_100_Price, y = Nasdaq_100_Vol.)) + 
+  geom_point(color = "blue", alpha = 0.6) + 
+  geom_smooth(method = "loess", color = "red", se = FALSE) + 
+  labs(title = "Scatter Plot: Nasdaq 100 Price vs Volume (Cleaned Data)",
+       x = "Nasdaq 100 Price",
+       y = "Nasdaq 100 Volume") 
+```
+
+```{r}
+# Categorize the prices by low, high, medium values
+categorize_prices <- function(x) {
+  mean_val <- mean(x, na.rm = TRUE)
+  sd_val <- sd(x, na.rm = TRUE)
+  
+  cut(x,
+      breaks = c(-Inf, mean_val - sd_val, mean_val + sd_val, Inf),
+      labels = c("Low", "Medium", "High"),
+      right = FALSE)
+}
+
+price_vars <- c("S.P_500_Price", "Nasdaq_100_Price")
+
+
+Index_Funds_Categorized <- Index_Funds_Clean
+
+for (var in price_vars) {
+  new_col <- paste0(var, "_Classification")
+  Index_Funds_Categorized[[new_col]] <- categorize_prices(Index_Funds_Clean[[var]])
+}
+view(Index_Funds_Categorized)
+```
+
+```{r}
+# Distribution of low, high, medium values for S&P 500 Price
+Index_Funds_Categorized %>% ggplot() + 
+  geom_bar(aes(S.P_500_Price_Classification)) + 
+  labs(title = "S&P 500 Price Classification Distribution",
+       x = "S&P 500 Price Classification",
+       y = "Count")
+```
+
+```{r}
+# Distribution of low, high, medium values for NASDAQ 100 Price
+Index_Funds_Categorized %>% ggplot() + 
+  geom_bar(aes(Nasdaq_100_Price_Classification)) +
+  labs(title = "NASDAQ 100 Price Classification Distribution",
+       x = "NASDAQ 100 Price Classification",
+       y = "Count")
+```
+
+```{r}
+# correlation test of Nasdaq price vs S&P 500 price
+cor.test(Index_Funds_Categorized$Nasdaq_100_Price, Index_Funds_Categorized$S.P_500_Price, paired = TRUE)
+```
+
+```{r}
+# correlation test of Nasdaq price vs Nasdaq volume
+cor.test(Index_Funds_Categorized$Nasdaq_100_Price, Index_Funds_Categorized$Nasdaq_100_Vol., paired = TRUE)
+```
+
+```{r}
+ggplot(data = Index_Funds_Categorized, aes(x = Nasdaq_100_Price, y = S.P_500_Price)) + 
+  geom_point() + 
+  stat_smooth(method = lm)
+```
+
+```{r}
+ggplot(data = Index_Funds_Categorized, aes(x = Nasdaq_100_Price, y = Nasdaq_100_Vol.)) + 
+  geom_point() + 
+  stat_smooth(method = lm)
+```
+
+```{r}
+# linear regression of Nasdaq price vs S&P 500 price
+IndexFund_LinearReg <- lm(Nasdaq_100_Price ~ S.P_500_Price, data = Index_Funds_Categorized)
+summary(IndexFund_LinearReg)
+```
+
+```{r}
+# calculate percent error
+IndexFund_LinearReg_Sum <- summary(IndexFund_LinearReg)
+IndexFund_rse <- IndexFund_LinearReg_Sum$sigma
+Nasdaq_Mean <- mean(Index_Funds_Categorized$Nasdaq_100_Price, na.rm = TRUE)
+IndexFund_PercentError <- (IndexFund_rse / Nasdaq_Mean) * 100
+IndexFund_PercentError
+```
+
+```{r}
+# linear regression of Nasdaq price vs Nasdaq volume
+Nasdaq_LinearReg <- lm(Nasdaq_100_Price ~ Nasdaq_100_Vol., data = Index_Funds_Categorized)
+summary(Nasdaq_LinearReg)
+```
+
+```{r}
+# calculate percent error
+Nasdaq_LinearReg_Sum <- summary(Nasdaq_LinearReg)
+Naqdaq_rse <- Nasdaq_LinearReg_Sum$sigma
+Nasdaq_Mean <- mean(Index_Funds_Categorized$Nasdaq_100_Price, na.rm = TRUE)
+Naqdaq_PercentError <- (Naqdaq_rse / Nasdaq_Mean) * 100
+Naqdaq_PercentError
+```
+
+```{r}
+# glm on S&P 500 binary price vs tech stocks
+Index_Funds_Categorized$S.P_500_Price_Binary <- ifelse(Index_Funds_Categorized$S.P_500_Price > lag(Index_Funds_Categorized$S.P_500_Price), 1, 0)
+S.P_500_glm <- glm(
+  S.P_500_Price_Binary ~ S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol.,
+  data = Index_Funds_Categorized,
+  family = binomial
+)
+summary(S.P_500_glm)
+```
+
+```{r}
+Overall_Bitcoin_Price_LR <- lm(Bitcoin_Price ~ Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Bitcoin_Price_LR)
+```
+
+```{r}
+Overall_Bitcoin_Vol._LR <- lm(Bitcoin_Vol. ~ Bitcoin_Price + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Bitcoin_Vol._LR)
+```
+
+```{r}
+Overall_Ethereum_Price_LR <- lm(Ethereum_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Ethereum_Price_LR)
+```
+
+```{r}
+Overall_Ethereum_Vol._LR <- lm(Ethereum_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Ethereum_Vol._LR)
+```
+
+```{r}
+Overall_Natural_Gas_Price_LR <- lm(Natural_Gas_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Natural_Gas_Price_LR)
+```
+
+```{r}
+Overall_Natural_Gas_Vol._LR <- lm(Natural_Gas_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Natural_Gas_Vol._LR)
+```
+
+```{r}
+Overall_Crude_oil_Price_LR <- lm(Crude_oil_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Crude_oil_Price_LR)
+```
+
+```{r}
+Overall_Crude_oil_Vol._LR <- lm(Crude_oil_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Crude_oil_Vol._LR)
+```
+
+```{r}
+Overall_Meta_Price_LR <- lm(Meta_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Meta_Price_LR)
+```
+
+```{r}
+Overall_Meta_Vol._LR <- lm(Meta_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Meta_Vol._LR)
+```
+
+```{r}
+Overall_Google_Price_LR <- lm(Google_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Google_Price_LR)
+```
+
+```{r}
+Overall_Google_Vol._LR <- lm(Google_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Google_Vol._LR)
+```
+
+```{r}
+Overall_Apple_Price_LR <- lm(Apple_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Apple_Price_LR)
+```
+
+```{r}
+Overall_Apple_Vol._LR <- lm(Apple_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + S.P_500_Price + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Apple_Vol._LR)
+```
+
+```{r}
+Overall_S.P_500_Price_LR <- lm(S.P_500_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + Nasdaq_100_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_S.P_500_Price_LR)
+```
+
+```{r}
+Overall_Nasdaq_Price_LR <- lm(Nasdaq_100_Price ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Vol., data = Project_stocks)
+summary(Overall_Nasdaq_Price_LR)
+```
+
+```{r}
+Overall_Nasdaq_100_Vol._LR <- lm(Nasdaq_100_Vol. ~ Bitcoin_Price + Bitcoin_Vol. + Ethereum_Price + Ethereum_Vol. + Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol. + Meta_Price + Meta_Vol. + Google_Price + Google_Vol. + Apple_Price + Apple_Vol. + S.P_500_Price + Nasdaq_100_Price, data = Project_stocks)
+summary(Overall_Nasdaq_100_Vol._LR)
+```
+
+```{r}
+# Store tech stock columns in Tech_Stocks and create summary
+Tech_Stocks <- stocks[c("Date", "Meta_Vol.", "Meta_Price", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.")]
+summary(Tech_Stocks)
+```
+
+```{r}
+# check missing values
+summary(is.na(Tech_Stocks))
+```
+
+```{r}
+# calculate percentage of outliers
+percent_outliers <- function(x){
+  q1 <- quantile(x, .025)
+  q3 <- quantile(x, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (x < lower | x > upper) *100
+}
+Vars = c("Meta_Price", "Meta_Vol.", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.")
+techStocks_iqr_outliers <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Tech_Stocks[, Vars], percent_outliers)
+)
+techStocks_iqr_outliers
+```
+
+```{r}
+# Remove missing values and outliers, count number of rows removed
+Tech_Stocks_Clean <- Tech_Stocks %>%
+  mutate(across(where(is.double) & !all_of("Date"), ~ {
+    Q1 <- quantile(.x, 0.25)
+    Q3 <- quantile(.x, 0.75)
+    IQR_val <- Q3 - Q1
+    lower <- Q1 - 1.5 * IQR_val
+    upper <- Q3 + 1.5 * IQR_val
+    ifelse(.x < lower | .x > upper, NA, .x)
+  })) %>%
+  drop_na()
+nrow(Tech_Stocks) - nrow(Tech_Stocks_Clean)
+```
+
+```{r}
+# Check for outliers after removal
+percent_outliers <- function(df){
+  q1 <- quantile(df, .025)
+  q3 <- quantile(df, .975)
+  iqr <- q3-q1
+  lower <- q1 - 1.5*iqr
+  upper <- q3 + 1.5*iqr
+  mean (df < lower | df > upper) *100
+}
+Vars = c("Meta_Price", "Meta_Vol.", "Google_Price", "Google_Vol.", "Apple_Price", "Apple_Vol.")
+techStocks_iqr_outliers2 <- data.frame(
+  Variables = Vars,
+  outlier_percent = sapply(Tech_Stocks_Clean[, Vars], percent_outliers)
+)
+techStocks_iqr_outliers2
+```

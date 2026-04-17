@@ -1,0 +1,655 @@
+---
+title: "Project2"
+format: html
+editor: visual
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+library(ggplot2)
+
+# Calculate mean values
+natural_gas_mean <- mean(Stock_Market_Dataset$Natural_Gas_Vol., na.rm = TRUE)
+crude_oil_mean <- mean(Stock_Market_Dataset$Crude_oil_Vol., na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Energy_Type = c("Natural Gas", "Crude Oil"),
+  Mean_Volume = c(natural_gas_mean, crude_oil_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Energy_Type, y = Mean_Volume, fill = Energy_Type)) +
+  geom_col() +
+  labs(x = "Energy Type", y = "Mean Volume", title = "Mean Energy Volumes")
+
+```
+
+
+
+```{r}
+library(ggplot2)
+
+# Calculate mean values
+meta_mean <- mean(Stock_Market_Dataset$Meta_Vol., na.rm = TRUE)
+google_mean <- mean(Stock_Market_Dataset$Google_Vol., na.rm = TRUE)
+apple_mean <- mean(Stock_Market_Dataset$Apple_Vol., na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Stock = c("Meta", "Google", "Apple"),
+  Mean_Volume = c(meta_mean, google_mean, apple_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Stock, y = Mean_Volume, fill = Stock)) +
+  geom_col() +
+  labs(x = "Stock", y = "Mean Volume", title = "Mean Trading Volume of Meta, Google, and Apple")
+```
+
+
+```{r}
+library(ggplot2)
+
+# Calculate mean values
+meta_mean <- mean(Stock_Market_Dataset$Meta_Vol., na.rm = TRUE)
+google_mean <- mean(Stock_Market_Dataset$Google_Vol., na.rm = TRUE)
+apple_mean <- mean(Stock_Market_Dataset$Apple_Vol., na.rm = TRUE)
+nasdaq_mean <- mean(Stock_Market_Dataset$Nasdaq_100_Vol., na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Stock = c("Meta", "Google", "Apple", "Nasdaq 100"),
+  Mean_Volume = c(meta_mean, google_mean, apple_mean, nasdaq_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Stock, y = Mean_Volume, fill = Stock)) +
+  geom_col() +
+  labs(x = "Stock", y = "Mean Volume", title = "Mean Trading Volume of Meta, Google, Apple, and Nasdaq 100")
+```
+
+
+
+```{r}
+library(ggplot2)
+
+# Calculate mean values for Bitcoin and Ethereum
+bitcoin_mean <- mean(Stock_Market_Dataset$Bitcoin_Price, na.rm = TRUE)
+ethereum_mean <- mean(Stock_Market_Dataset$Ethereum_Price, na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Crypto = c("Bitcoin", "Ethereum"),
+  Mean_Price = c(bitcoin_mean, ethereum_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Crypto, y = Mean_Price, fill = Crypto)) +
+  geom_col() +
+  labs(x = "Cryptocurrency", y = "Mean Price", title = "Mean Price of Bitcoin and Ethereum")
+```
+```{r}
+library(ggplot2)
+
+# Calculate mean values for Bitcoin and Ethereum
+bitcoin_mean <- mean(Stock_Market_Dataset$`Bitcoin_Vol.`, na.rm = TRUE)
+ethereum_mean <- mean(Stock_Market_Dataset$`Ethereum_Vol.`, na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Crypto2 = c("Bitcoin", "Ethereum"),
+  Mean_vol = c(bitcoin_mean, ethereum_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Crypto2, y = Mean_vol, fill = Crypto2)) +
+  geom_col() +
+  labs(x = "Cryptocurrency", y = "Mean volume", title = "Mean volume of Bitcoin and Ethereum")
+```
+
+
+
+
+
+
+```{r}
+library(ggplot2)
+
+# Calculate mean values for Natural Gas and Crude Oil
+natural_gas_mean <- mean(Stock_Market_Dataset$Natural_Gas_Price, na.rm = TRUE)
+crude_oil_mean <- mean(Stock_Market_Dataset$Crude_oil_Price, na.rm = TRUE)
+
+# Create a simple data frame for plotting
+data <- data.frame(
+  Energy = c("Natural Gas", "Crude Oil"),
+  Mean_Price = c(natural_gas_mean, crude_oil_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Energy, y = Mean_Price, fill = Energy)) +
+  geom_col() +
+  labs(x = "Energy", y = "Mean Price", title = "Mean Price of Natural Gas and Crude Oil")
+
+```
+```{r}
+library(ggplot2)
+
+# Calculate mean prices
+meta_mean <- mean(Stock_Market_Dataset$Meta_Price, na.rm = TRUE)
+google_mean <- mean(Stock_Market_Dataset$Google_Price, na.rm = TRUE)
+apple_mean <- mean(Stock_Market_Dataset$Apple_Price, na.rm = TRUE)
+
+# Create a single data frame
+data <- data.frame(
+  Stock = c("Meta", "Google", "Apple"),
+  Mean_Price = c(meta_mean, google_mean, apple_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Stock, y = Mean_Price, fill = Stock)) +
+  geom_col() +
+  labs(x = "Stock", y = "Mean Price", title = "Mean Price of Meta, Google, and Apple") +
+  theme_minimal()
+
+```
+```{r}
+library(ggplot2)
+
+# Calculate mean prices
+nasdaq_mean <- mean(Stock_Market_Dataset$Nasdaq_100_Price, na.rm = TRUE)
+sp500_mean <- mean(Stock_Market_Dataset$`S&P_500_Price`, na.rm = TRUE)  # Use backticks for S&P 500
+
+# Create a data frame
+data <- data.frame(
+  Index = c("Nasdaq 100", "S&P 500"),
+  Mean_Price = c(nasdaq_mean, sp500_mean)
+)
+
+# Plot
+ggplot(data, aes(x = Index, y = Mean_Price, fill = Index)) +
+  geom_col() +
+  labs(x = "Index", y = "Mean Price", title = "Mean Price of Nasdaq 100 and S&P 500") +
+  theme_minimal()
+```
+
+
+
+```{r}
+#function to calculate percentage of missing values
+percent_missing <- function(x) {
+  mean(is.na(x)) * 100
+}
+
+# function to calculate percentage of outliers using IQR method
+percent_outliers <- function(x) {
+  x <- x[!is.na(x)]  # Remove NAs
+  q1 <- quantile(x, 0.25)
+  q3 <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  lower <- q1 - 1.5 * iqr
+  upper <- q3 + 1.5 * iqr
+  mean(x < lower | x > upper) * 100
+}
+
+# Variables to analyze
+variables <- c("Natural_Gas_Price", "Natural_Gas_Vol.", "Meta_Price", "Meta_Vol.")
+
+# Compute percentages
+result <- data.frame(
+  Variable = variables,
+  Percent_Missing = sapply(Stock_Market_Dataset[ , variables], percent_missing),
+  Percent_Outliers = sapply(Stock_Market_Dataset[ , variables], percent_outliers)
+)
+print(result)
+```
+
+
+```{r}
+# Remove rows where Natural_Gas_Vol is NA
+Stock_Market_Dataset2 <- Stock_Market_Dataset[!is.na(Stock_Market_Dataset$Natural_Gas_Vol), ]
+# print missing vaules 
+sum(is.na(Stock_Market_Dataset2$Natural_Gas_Vol))
+```
+
+
+```{r}
+# Load ggplot2 for plotting
+library(ggplot2)
+
+# Create log-transformed plots
+log_plot <- function(column_name, dataset) {
+  # Create plot title
+  plot_title <- paste("Log Transformation of", column_name)
+  
+  # Apply log 
+  ggplot(dataset, aes_string(x = paste0("", column_name, ""))) +
+    geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+    labs(title = plot_title, x = paste("", column_name, "", sep = ""), y = "count") +
+    theme_minimal()
+}
+
+# Plot Natural_Gas_Price
+log_plot("Natural_Gas_Price", Stock_Market_Dataset2)
+
+# Plot Natural_Gas_Vol
+log_plot("Natural_Gas_Vol.", Stock_Market_Dataset2)
+
+# Plot Meta_Vol
+log_plot("Meta_Vol.", Stock_Market_Dataset2)
+```
+
+
+```{r}
+# Load ggplot2
+library(ggplot2)
+
+# Scatter plot between Natural_Gas_Price and Natural_Gas_Vol
+ggplot(Stock_Market_Dataset2, aes(x = Natural_Gas_Price, y = Natural_Gas_Vol.)) +
+  geom_point(color = "darkgreen", alpha = 0.6) +
+  geom_smooth(method = "loess", color = "red", se = FALSE) +
+  labs(title = "Natural Gas Price vs Volume",
+       x = "Natural Gas Price",
+       y = "Natural Gas Volume") +
+  theme_minimal()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# extracts Year and Month 
+Stock_Market_Dataset2$Year <- format(Stock_Market_Dataset2$Date, "%Y")
+Stock_Market_Dataset2$Month <- format(Stock_Market_Dataset2$Date, "%m")
+Stock_Market_Dataset2$YearMonth <- format(Stock_Market_Dataset2$Date, "%Y-%m")
+
+# Yearly summary
+natural_gas_yearly <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = mean,
+  na.rm = TRUE
+)
+
+# Monthly summary
+natural_gas_monthly <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ YearMonth,
+  data = Stock_Market_Dataset2,
+  FUN = mean,
+  na.rm = TRUE
+)
+print("Yearly Natural Gas Summary:")
+print(natural_gas_yearly)
+
+print("Monthly Natural Gas Summary:")
+print(natural_gas_monthly)
+```
+
+
+```{r}
+# Extract Year, Month, and YearMonth
+Stock_Market_Dataset2$Year <- format(Stock_Market_Dataset2$Date, "%Y")
+Stock_Market_Dataset2$Month <- format(Stock_Market_Dataset2$Date, "%m")
+# YEARLY HIGH (max)
+natural_gas_yearly_high <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+# YEARLY LOW 
+natural_gas_yearly_low <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+# MONTHLY HIGH 
+natural_gas_monthly_high <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+# MONTHLY LOW 
+natural_gas_monthly_low <- aggregate(
+  cbind(Natural_Gas_Price, Natural_Gas_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+#  print results
+print(natural_gas_yearly_high)
+print(natural_gas_yearly_low)
+print(natural_gas_monthly_high)
+print(natural_gas_monthly_low)
+```
+
+
+```{r}
+# Extract Year, Month, and YearMonth
+Stock_Market_Dataset2$Year <- format(Stock_Market_Dataset2$Date, "%Y")
+Stock_Market_Dataset2$Month <- format(Stock_Market_Dataset2$Date, "%m")
+# YEARLY HIGH 
+Meta_yearly_high <- aggregate(
+  cbind(Meta_Price, Meta_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+# YEARLY LOW 
+Meta_yearly_low <- aggregate(
+  cbind(Meta_Price, Meta_Vol.) ~ Year,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+# MONTHLY HIGH 
+Meta_monthly_high <- aggregate(
+  cbind(Meta_Price, Meta_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = max,
+  na.rm = TRUE
+)
+# MONTHLY LOW 
+Meta_monthly_low <- aggregate(
+  cbind(Meta_Price, Meta_Vol.) ~ Month,
+  data = Stock_Market_Dataset2,
+  FUN = min,
+  na.rm = TRUE
+)
+#  print results
+print(Meta_yearly_high)
+print(Meta_yearly_low)
+print(Meta_monthly_high)
+print(Meta_monthly_low)
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+# Correlation test for Bitcoin_Vol and Meta_Vol
+vol_test <- cor.test(Stock_Market_Dataset2$Bitcoin_Vol., Stock_Market_Dataset2$Meta_Vol., use = "complete.obs")
+
+# Correlation test for Bitcoin_Price and Meta_Price
+price_test <- cor.test(Stock_Market_Dataset2$Bitcoin_Price, Stock_Market_Dataset2$Meta_Price, use = "complete.obs")
+
+# Print results
+print(vol_test)
+print(price_test)
+```
+
+
+
+
+```{r}
+# Load library
+library(dplyr)
+library(ggplot2)
+# Calculate returns for each asset
+Stock_Market_Dataset2 <- Stock_Market_Dataset2 %>%
+  mutate(
+    Meta_Return = (Meta_Price / lag(Meta_Price)) - 1,
+    Bitcoin_Return = (Bitcoin_Price / lag(Bitcoin_Price)) - 1,
+    Google_Return = (Google_Price / lag(Google_Price)) - 1,
+    Apple_Return = (Apple_Price / lag(Apple_Price)) - 1,
+    Crude_oil_Return = (Crude_oil_Price / lag(Crude_oil_Price)) - 1,
+    Natural_Gas_Return = (Natural_Gas_Price / lag(Natural_Gas_Price)) - 1,
+    Ethereum_Return = (Ethereum_Price / lag(Ethereum_Price)) - 1,
+    SNP500_Return = (`S&P_500_Price` / lag(`S&P_500_Price`)) - 1,
+    Nasdaq_100_Return = (Nasdaq_100_Price / lag(Nasdaq_100_Price)) - 1
+  )
+#  Calculate volatility 
+volatility_summary <- data.frame(
+  Asset = c("Meta", "Bitcoin", "Google", "Apple", "Crude Oil", "Natural Gas", "Etherum", "S&P 500", "Nasdaq 100"),
+  Volatility = c(
+    sd(Stock_Market_Dataset2$Meta_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Bitcoin_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Google_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Apple_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Crude_oil_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Natural_Gas_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Ethereum_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$SNP500_Return, na.rm = TRUE),
+    sd(Stock_Market_Dataset2$Nasdaq_100_Return, na.rm = TRUE)
+  )
+)
+# Sort by volatility
+volatility_summary <- volatility_summary %>%
+  arrange(desc(Volatility))
+
+# View volatility table
+print(volatility_summary)
+
+# Plot volatility
+ggplot(volatility_summary, aes(x = reorder(Asset, Volatility), y = Volatility, fill = Asset)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(
+    title = "Volatility of Different Assets (Standard Deviation of Returns)",
+    x = "Asset",
+    y = "Volatility"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+```{r}
+# Perform t-tests
+t_test_meta_google <- t.test(Stock_Market_Dataset2$Meta_Price, Stock_Market_Dataset2$Google_Price)
+t_test_meta_apple <- t.test(Stock_Market_Dataset2$Meta_Price, Stock_Market_Dataset2$Apple_Price)
+t_test_google_apple <- t.test(Stock_Market_Dataset2$Google_Price, Stock_Market_Dataset2$Apple_Price)
+
+t_test_meta_googlevol <- t.test(Stock_Market_Dataset2$Meta_Vol., Stock_Market_Dataset2$Google_Vol.)
+t_test_meta_applevol <- t.test(Stock_Market_Dataset2$Meta_Vol., Stock_Market_Dataset2$Apple_Vol.)
+t_test_google_applevol <- t.test(Stock_Market_Dataset2$Google_Vol., Stock_Market_Dataset2$Apple_Vol.)
+
+# Display the results
+t_test_meta_google
+t_test_meta_apple
+t_test_google_apple
+
+t_test_meta_googlevol
+t_test_meta_applevol
+t_test_google_applevol
+```
+
+
+```{r}
+# Perform t-tests 
+t_test_bitcoin_ethereum <- t.test(Stock_Market_Dataset2$Bitcoin_Price, Stock_Market_Dataset2$Ethereum_Price)
+t_test_bitcoin_ethereum_vol <- t.test(Stock_Market_Dataset2$Bitcoin_Vol., Stock_Market_Dataset2$Ethereum_Vol.)
+
+# Display the results
+t_test_bitcoin_ethereum
+t_test_bitcoin_ethereum_vol
+```
+
+
+```{r}
+# Perform t-tests 
+t_test_crude_gas <- t.test(Stock_Market_Dataset2$Crude_oil_Price, Stock_Market_Dataset2$Natural_Gas_Price)
+t_test_crude_gasvol <- t.test(Stock_Market_Dataset2$Crude_oil_Vol., Stock_Market_Dataset2$Natural_Gas_Vol.)
+
+# Display the results
+t_test_crude_gas
+t_test_crude_gasvol
+```
+```{r}
+# Perform t-tests 
+t_test_sp_nasdaq <- t.test(Stock_Market_Dataset2$`S&P_500_Price`, Stock_Market_Dataset2$Nasdaq_100_Price)
+# Display the results
+t_test_sp_nasdaq
+
+```
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(ggplot2)
+
+# Assuming your data frame is named Stock_Market_Dataset2
+# For illustration, we'll create a binary outcome variable based on median price
+
+# Create binary outcome variable (1 if price > median, 0 otherwise)
+Stock_Market_Dataset2$`S&P_500_Price_Binary` <- ifelse(Stock_Market_Dataset2$`S&P_500_Price` > median(Stock_Market_Dataset2$`S&P_500_Price`, na.rm = TRUE), 1, 0)
+Stock_Market_Dataset2$Nasdaq_100_Price_Binary <- ifelse(Stock_Market_Dataset2$Nasdaq_100_Price > median(Stock_Market_Dataset2$Nasdaq_100_Price, na.rm = TRUE), 1, 0)
+
+
+# Split the dataset into training and testing sets (80% train, 20% test)
+set.seed(42)  # For reproducibility
+train_index <- createDataPartition(Stock_Market_Dataset2$`S&P_500_Price_Binary`, p = 0.8, list = FALSE)
+train_data <- Stock_Market_Dataset2[train_index, ]
+test_data <- Stock_Market_Dataset2[-train_index, ]
+
+# Fit a logistic regression model with S&P_500_Price and Nasdaq_100_Price as predictors
+model <- glm(`S&P_500_Price_Binary` ~ `S&P_500_Price` + Nasdaq_100_Price, data = train_data, family = binomial)
+
+# Summary of the model
+summary(model)
+
+# Make predictions on the test set
+predictions <- predict(model, test_data, type = "response")
+predicted_class <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate the model
+confusion_matrix <- table(Predicted = predicted_class, Actual = test_data$`S&P_500_Price_Binary`)
+print(confusion_matrix)
+
+# Calculate accuracy
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+cat("Accuracy: ", accuracy, "\n")
+
+
+
+```
+```{r}
+# Split data
+set.seed(42)
+train_index <- createDataPartition(Stock_Market_Dataset2$Meta_Price, p = 0.8, list = FALSE)
+train_data <- Stock_Market_Dataset2[train_index, ]
+test_data <- Stock_Market_Dataset2[-train_index, ]
+
+# Linear regression
+model <- lm(Meta_Price ~ Apple_Price + Google_Price, data = train_data)
+summary(model)
+
+# Predict
+predictions <- predict(model, test_data)
+
+# RMSE (Root Mean Squared Error) for evaluation
+rmse <- sqrt(mean((predictions - test_data$Meta_Price)^2))
+cat("RMSE:", rmse, "\n")
+
+
+```
+```{r}
+library(dplyr)
+
+Stock_Market_Dataset2 <- Stock_Market_Dataset2 %>%
+  arrange(Date) %>%
+  mutate(Meta_Price_Tomorrow = lead(Meta_Price, 1))  # Shift prices to create tomorrow's price
+
+# Now create a binary target variable for price movement
+Stock_Market_Dataset2 <- Stock_Market_Dataset2 %>%
+  mutate(Meta_Up = ifelse(Meta_Price_Tomorrow > Meta_Price, 1, 0))  # 1 if price went up, else 0
+
+```
+```{r}
+# logistic regression
+model <- glm(Meta_Up ~ Meta_Price + Google_Price + Apple_Price + Meta_Vol. + Google_Vol. + Apple_Vol., 
+             family = "binomial", data = Stock_Market_Dataset2)
+
+# Summary of the model
+summary(model)
+
+
+```
+```{r}
+# Load necessary libraries
+library(dplyr)
+
+
+# Create the binary outcome variable (whether price goes up the next day)
+Stock_Market_Dataset2$Natural_Gas_Price_Binary <- ifelse(Stock_Market_Dataset2$Natural_Gas_Price > lag(Stock_Market_Dataset2$Natural_Gas_Price), 1, 0)
+
+# Split the data into training and testing sets
+set.seed(123)  # For reproducibility
+train_index <- sample(1:nrow(Stock_Market_Dataset2), size = 0.7 * nrow(Stock_Market_Dataset2))
+train_data <- Stock_Market_Dataset2[train_index, ]
+test_data <- Stock_Market_Dataset2[-train_index, ]
+
+# Fit the logistic regression model
+model <- glm(Natural_Gas_Price_Binary ~ Natural_Gas_Price + Natural_Gas_Vol. + Crude_oil_Price + Crude_oil_Vol.,
+             family = binomial, data = train_data)
+
+# View model summary
+summary(model)
+
+# Make predictions on the test set
+predictions <- predict(model, test_data, type = "response")
+
+# Convert predictions to binary outcome (0 or 1)
+predicted_class <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate accuracy
+conf_matrix <- table(predicted_class, test_data$Natural_Gas_Price_Binary)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+print(paste("Accuracy:", round(accuracy, 4)))
+
+
+
+```
+```{r}
+library(dplyr)
+
+# Split into train and test sets
+set.seed(123)
+train_indices <- sample(1:nrow(Stock_Market_Dataset2), 0.7 * nrow(Stock_Market_Dataset2))
+train_data <- Stock_Market_Dataset2[train_indices, ]
+test_data <- Stock_Market_Dataset2[-train_indices, ]
+
+# Train logistic regression model
+model <- glm(Nasdaq_100_Price_Binary ~ `S&P_500_Price` + Nasdaq_100_Price + Nasdaq_100_Vol.,
+             family = binomial, data = train_data)
+
+summary(model)
+
+# Predict on test set
+predicted_probs <- predict(model, newdata = test_data, type = "response")
+predicted_classes <- ifelse(predicted_probs > 0.5, 1, 0)
+
+# Accuracy
+conf_matrix <- table(Predicted = predicted_classes, Actual = test_data$Nasdaq_100_Price_Binary)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+print(conf_matrix)
+print(paste("Accuracy:", round(accuracy, 4)))
+
+```
+
